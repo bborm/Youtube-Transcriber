@@ -6,8 +6,10 @@ This uses Streamlit and AssemblyAI. Consider this a hightly modified version of 
 
 ## Instructions
 * rename configure.py.example to configure.py. Paste in assemblyai key.
-* install youtube-dl, ffmpeg, streamlit, and yt-dlp. technically youtube-dl was replaced with yt-dlp but i haven't removed it as a requirement yet so it would probably fail without it. i use pipenv instead of just pip so the following will be using that
-* run "pipenv shell" to get into the environment then run "streamlit run ytt.py". 
+* ~~install youtube-dl, ffmpeg, streamlit, and yt-dlp. technically youtube-dl was replaced with yt-dlp but i haven't removed it as a requirement yet so it would probably fail without it. i use pipenv instead of just pip so the following will be using that~~
+* run "pipenv shell" to get into the environment
+* if first time run pipenv install to install the dependencies automatically
+* then run "streamlit run ytt.py". 
 * Go to site listed on screen
 * paste in youtube video, it should show below
 * adjust start and end time. they must be in hh:mm:ss format. if you leave the end time blank it just transcribes to the end. If you just want to transcribe the entire video just leave the defaults. 
