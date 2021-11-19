@@ -30,6 +30,7 @@ ydl_opts = {
 
 transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
 upload_endpoint = "https://api.assemblyai.com/v2/upload"
+balance_endpoint = "https://api.assemblyai.com/v2/account"
 
 headers_auth_only = {'authorization': auth_key}
 headers = {
@@ -40,6 +41,18 @@ headers = {
 #polling_endpoint_global = ''
 
 CHUNK_SIZE = 5242880
+
+def get_balance(return_formatted=True):
+    response = requests.get(
+        balance_endpoint,
+        headers=headers_auth_only
+    )
+
+    value = response.json()['current_balance']['amount']
+
+    if return_formatted:
+        return "${:,.2f}".format(value)
+    return value
 
 def milliseconds_to_seconds(milliseconds):
     return milliseconds // 1000
@@ -187,7 +200,9 @@ def format_transcript(mp3name):
             
 
 
-st.title("YTT")
+st.title("YTT2")
+
+st.sidebar.text("Balance: " + get_balance())
 
 link = st.text_input('Enter YT link', 'https://youtu.be/dccdadl90vs', on_change=refresh_state)
 
