@@ -7,6 +7,7 @@ import pprint
 from time import sleep
 import json
 import yt_dlp
+import os
 
 if 'status' not in st.session_state:
     st.session_state['status'] = 'waiting for user'
@@ -186,7 +187,7 @@ def format_transcript(mp3name):
 
                 for item in jsondata["chapters"]:
                     print(item)
-                    w.write("<a href=\"#\" onclick=\"player.seekTo(" + str(milliseconds_to_seconds(item['start'])) +  ", true);\">" + milliseconds_to_hhmmss(item['start']) + "</a>" + " " + item['headline'] + "  \n")
+                    w.write("<a href=\"javascript:void()\" onclick=\"player.seekTo(" + str(milliseconds_to_seconds(item['start'])) +  ", true);\">" + milliseconds_to_hhmmss(item['start']) + "</a>" + " " + item['headline'] + "  \n")
                     ww.write(milliseconds_to_hhmmss(item['start']) + " " + item['headline'] + "\n")
 
             with open(st.session_state['mp3name'] + '.paragraphs.json', 'r') as f:
@@ -195,9 +196,11 @@ def format_transcript(mp3name):
                 w.write("\n### Transcript\n")
 
                 for item in jsondata["paragraphs"]:
-                    w.write("<a href=\"#\" onclick=\"player.seekTo(" + str(milliseconds_to_seconds(item['start'])) +  ", true);\">" + milliseconds_to_hhmmss(item['start']) + "</a>" + " " + item['text'] + "\n\n") 
+                    w.write("<a href=\"javascript:void()\" onclick=\"player.seekTo(" + str(milliseconds_to_seconds(item['start'])) +  ", true);\">" + milliseconds_to_hhmmss(item['start']) + "</a>" + " " + item['text'] + "\n\n") 
 
-            
+
+if (not os.path.isdir("downloads")):
+     os.mkdir("downloads")           
 
 
 st.title("YTT2")
