@@ -1,7 +1,5 @@
 import streamlit as st
 from configure import auth_key
-import youtube_dl
-import ffmpeg
 import requests
 import pprint
 from time import sleep
@@ -15,8 +13,8 @@ if 'status' not in st.session_state:
     st.session_state['mp3name'] = ''
     st.session_state['duration'] = 0
     st.session_state['upload_url'] = ''
+    st.session_state['id'] = ''
     
-
 
 ydl_opts = {
     'format': 'bestaudio/best',
@@ -25,7 +23,7 @@ ydl_opts = {
         'preferredcodec': 'mp3',
         'preferredquality': '192'
     }],
-    'ffmpeg-location': './',
+    #'ffmpeg-location': './',
     'outtmpl': "./%(id)s.%(ext)s"
 }
 
@@ -54,6 +52,11 @@ def get_balance(return_formatted=True):
     if return_formatted:
         return "${:,.2f}".format(value)
     return value
+
+def save_json(object, filename):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, 'w') as f:
+        json.dump(object, f)
 
 def milliseconds_to_seconds(milliseconds):
     return milliseconds // 1000
@@ -109,6 +112,10 @@ def transcribe_from_link(link, start_from, end_at):
 
     meta = get_vid(_id)
     save_location = meta['id'] + ".mp3"
+    st.session_state['id'] = meta['id']
+    save_json(meta, "./downloads/" + meta['id'] + "/" + meta['id'] + ".json")
+    os.rename("./" + meta['id'] + ".mp3", "./downloads/" + meta['id'] + "/" + meta['id'] + ".mp3")
+    save_location = "./downloads/" + meta['id'] + "/" + meta['id'] + ".mp3"
     #print(meta)
     st.session_state['duration'] = meta['duration']
     st.session_state['mp3name'] = save_location
@@ -171,15 +178,15 @@ def refresh_state():
     st.session_state['status'] = 'submitted'
 
 def format_transcript(mp3name):
-
-    with open(st.session_state['mp3name'] + ".youtube_chapters.txt", 'a') as ww:
-        with open(st.session_state['mp3name'] + ".markdown", 'a') as w:
+    #"./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + ".transcript.json"
+    with open("./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + ".youtube_chapters.txt", 'a') as ww:
+        with open("./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + ".markdown", 'a') as w:
 
             w.write("_The following is a computer generated transcript. [Learn more about our automated transcription.](/about-transcription)_\n\n")
 
-            with open(st.session_state['mp3name'] + '.json', 'r') as f:
+            with open("./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + '.mp3.json', 'r') as f:
                 jsondata = json.load(f)
-
+                #print(jsondata)
                 w.write("### Chapters\n")
                 ww.write("Chapters\n")
                 ww.write("--------------------\n")
@@ -190,7 +197,7 @@ def format_transcript(mp3name):
                     w.write("<a href=\"javascript:void()\" onclick=\"player.seekTo(" + str(milliseconds_to_seconds(item['start'])) +  ", true);\">" + milliseconds_to_hhmmss(item['start']) + "</a>" + " " + item['headline'] + "  \n")
                     ww.write(milliseconds_to_hhmmss(item['start']) + " " + item['headline'] + "\n")
 
-            with open(st.session_state['mp3name'] + '.paragraphs.json', 'r') as f:
+            with open("./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + '.mp3.paragraphs.json', 'r') as f:
                 jsondata = json.load(f)
 
                 w.write("\n### Transcript\n")
@@ -231,10 +238,12 @@ transcript = ''
 if st.session_state['status'] == 'completed':
     polling_response = requests.get(st.session_state['polling_endpoint'], headers=headers)
     transcript = polling_response.json()['text']
+    save_json(polling_response.json(), "./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + ".transcript.json")
     with open(st.session_state['mp3name'] + '.json', 'w') as f:
         json.dump(polling_response.json(), f)
     
     paragraph_response = requests.get(st.session_state['polling_endpoint'] + '/paragraphs', headers=headers)
+    save_json(paragraph_response.json(), "./downloads/" + st.session_state['id'] + "/" + st.session_state['id'] + ".paragraph.json")
     with open(st.session_state['mp3name'] + '.paragraphs.json', 'w') as f:
         json.dump(paragraph_response.json(), f)
 
